@@ -74,6 +74,7 @@ select,input{border:1px solid #cfd6df;border-radius:9px;padding:9px 10px;backgro
   <button class="tab" data-view="factores">20 factores</button>
   <button class="tab" data-view="gobiernos">Gobiernos</button>
   <button class="tab" data-view="comparapaises">Comparar países</button>
+  <button class="tab" data-view="padrespais">Padres por país</button>
   <button class="tab" data-view="acciones">Qué hacer</button>
   <button class="tab" data-view="glosario">Diccionario</button>
   <button class="tab" data-view="fuentes">Fuentes</button>
@@ -218,6 +219,20 @@ select,input{border:1px solid #cfd6df;border-radius:9px;padding:9px 10px;backgro
  </div>
 </section>
 
+<section id="padrespais" class="view"><div class="section"><h2>Participación familiar por país — PISA 2025</h2>
+<div class="notice"><strong>Qué mide:</strong> no existe un único porcentaje universal de “participación de padres”. Para no inventar una cifra, mostramos dos preguntas comparables respondidas por estudiantes de 15 años: si sus padres/tutores les preguntan al menos semanalmente qué hicieron en la escuela y si hablan semanalmente sobre problemas escolares.</div>
+<div class="grid2">
+<div class="card"><h3>Preguntan qué hicieron en la escuela</h3><div class="meta">Al menos una vez por semana · 2025</div><div class="chart tall"><canvas id="parentsAskCountry"></canvas></div><div class="sourcebox">OCDE PISA 2025: México 63%; Chile 63%; Estonia 74%; Japón 64%; Singapur 55%; promedio OCDE 71%. <a target="_blank" href="https://www.oecd.org/en/publications/pisa-2025-results-volume-i_73451bc5-en/full-report/student-school-life-and-beyond_861e5904.html">Fuente OCDE ↗</a></div></div>
+<div class="card"><h3>Hablan sobre problemas en la escuela</h3><div class="meta">Al menos una vez por semana · 2025</div><div class="chart tall"><canvas id="parentsProblemsCountry"></canvas></div><div class="sourcebox">OCDE PISA 2025: México 42%; Chile 44%; Estonia 63%; Japón 31%; Singapur 37%. <a target="_blank" href="https://www.oecd.org/en/publications/pisa-2025-results-volume-i_73451bc5-en/full-report/results-for-countries-and-economies_33854635.html">Tablas OCDE ↗</a></div></div>
+</div>
+<div class="card" style="margin-top:13px"><h3>Evolución 2022 → 2025</h3><table class="datatable"><thead><tr><th>País</th><th>Pregunta 2022</th><th>2025</th><th>Cambio</th><th>Problemas 2022</th><th>2025</th><th>Cambio</th></tr></thead><tbody>
+<tr><td>México</td><td>71%</td><td>63%</td><td>−8 pp</td><td>56%</td><td>42%</td><td>−14 pp</td></tr>
+<tr><td>Chile</td><td>67%</td><td>63%</td><td>−4 pp</td><td>52%</td><td>44%</td><td>−8 pp</td></tr>
+<tr><td>Estonia</td><td>75%</td><td>74%</td><td>−1 pp</td><td>62%</td><td>63%</td><td>+1 pp</td></tr>
+<tr><td>Japón</td><td>69%</td><td>64%</td><td>−5 pp</td><td>35%</td><td>31%</td><td>−4 pp</td></tr>
+<tr><td>Singapur</td><td>62%</td><td>55%</td><td>−7 pp</td><td>47%</td><td>37%</td><td>−10 pp</td></tr>
+</tbody></table><div class="sourcebox"><strong>pp = puntos porcentuales.</strong> Promedio OCDE en “preguntar qué hicieron en la escuela”: 77% en 2022 → 71% en 2025.</div></div>
+</div></section>
 <section id="acciones" class="view">
  <div class="section"><h2>Medidas para levantar el aprendizaje</h2>
  <div class="notice">Estas medidas no son una “receta PISA”. Son líneas de acción coherentes con la evidencia que la OCDE destaca en PISA 2025 y con los problemas observados en México. Deben probarse y medirse con indicadores de dominio real.</div>
@@ -485,6 +500,9 @@ document.addEventListener("DOMContentLoaded",()=>{
  document.getElementById("yearSnapshot").onchange=renderYearSnapshot;
  renderYearSnapshot();
 });
+bar("parentsAskCountry",["México","Chile","Estonia","Japón","Singapur","OCDE"],[{name:"Pregunta por escuela",data:[63,63,74,64,55,71],suffix:"%"}],100);
+bar("parentsProblemsCountry",["México","Chile","Estonia","Japón","Singapur"],[{name:"Habla de problemas",data:[42,44,63,31,37],suffix:"%"}],100);
+
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
 bar("countryScores",["México","OCDE","B-S-J-Z China","Singapur"],[
  {name:"Matemáticas",data:[388,463,612,563]},
@@ -496,6 +514,9 @@ bar("countryLevel2",["México","OCDE","Chile","Estonia","Japón","Singapur"],[
  {name:"Lectura ≥2",data:[50,69,62,83,81,86],suffix:"%"},
  {name:"Ciencias ≥2",data:[50,74,63,90,89,90],suffix:"%"}
 ],100);
+
+bar("parentsAskCountry",["México","Chile","Estonia","Japón","Singapur","OCDE"],[{name:"Pregunta por escuela",data:[63,63,74,64,55,71],suffix:"%"}],100);
+bar("parentsProblemsCountry",["México","Chile","Estonia","Japón","Singapur"],[{name:"Habla de problemas",data:[42,44,63,31,37],suffix:"%"}],100);
 
 document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.getElementById(b.dataset.view).classList.add("active");setTimeout(()=>window.dispatchEvent(new Event("resize")),40)});
 attachStaticTips();
