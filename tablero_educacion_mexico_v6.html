@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tablero de Educación en México — Evidencia y tendencias</title>
+<style>
+:root{
+ --bg:#f4f6f9;--card:#fff;--ink:#172033;--muted:#667085;--line:#dfe4ea;
+ --red:#b42318;--amber:#b54708;--green:#067647;--blue:#175cd3;--nav:#101828;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--nav);color:white;padding:18px 20px;position:sticky;top:0;z-index:20;box-shadow:0 2px 14px #0003}
+.wrap{max-width:1450px;margin:auto}
+.head{display:flex;gap:20px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+h1{margin:0;font-size:clamp(23px,3.5vw,36px)}
+.sub{margin-top:6px;color:#cbd5e1;font-size:13px;max-width:850px}
+nav{display:flex;gap:8px;flex-wrap:wrap}
+nav button{border:1px solid #344054;background:#1d2939;color:#fff;padding:9px 12px;border-radius:9px;cursor:pointer}
+nav button.active{background:#fff;color:#101828}
+main{max-width:1450px;margin:20px auto;padding:0 18px 50px}
+.notice{background:#fffaeb;border:1px solid #fedf89;border-radius:12px;padding:12px 14px;font-size:13px;margin-bottom:16px}
+.view{display:none}.view.active{display:block}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(150px,1fr));gap:11px}
+.kpi,.card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 8px #1018280a}
+.kpi{padding:15px}.kpi .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.kpi .value{font-size:27px;font-weight:800;margin:4px 0}.kpi .foot{font-size:12px;color:var(--muted)}
+.section{margin-top:22px}.section h2{font-size:20px;margin:0 0 11px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.card{padding:16px}
+.card h3{margin:0 0 4px;font-size:17px}.meta{font-size:12px;color:var(--muted);margin-bottom:9px}
+.chart{height:300px;position:relative}.chart.tall{height:360px}canvas{width:100%;height:100%}
+.badge{display:inline-block;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700}
+.badge.red{background:#fee4e2;color:var(--red)}.badge.amber{background:#fef0c7;color:var(--amber)}.badge.green{background:#dcfae6;color:var(--green)}.badge.gray{background:#eef2f6;color:#475467}
+.sourcebox{border-top:1px solid var(--line);margin-top:12px;padding-top:10px;font-size:12px;color:var(--muted)}
+.sourcebox a,.sources a{color:var(--blue);text-decoration:none;font-weight:650}
+.controls{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:12px}
+.control label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
+select,input{border:1px solid #cfd6df;border-radius:9px;padding:9px 10px;background:#fff;min-width:210px}
+.datatable{width:100%;border-collapse:collapse;margin-top:10px}.datatable th,.datatable td{padding:9px;border-bottom:1px solid var(--line);font-size:12px;text-align:left}.datatable th{background:#f8fafc}
+.factor-layout{display:grid;grid-template-columns:360px 1fr;gap:14px}
+.factor-list{max-height:720px;overflow:auto;padding:8px}.factor-btn{width:100%;border:0;background:#fff;text-align:left;padding:10px;border-bottom:1px solid #eef2f6;cursor:pointer;border-radius:8px}.factor-btn:hover,.factor-btn.active{background:#f0f5ff}.factor-btn small{display:block;color:var(--muted);margin-top:3px}
+.factor-detail h2{margin-top:0}.metric{font-size:30px;font-weight:850}.explain{font-size:14px;line-height:1.55;color:#344054}
+.govgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.gov{padding:14px}.gov h3{margin:0 0 2px}.gov .years{font-size:12px;color:var(--muted)}.gov ul{padding-left:17px;font-size:12px;color:#475467;line-height:1.45}
+.sources{padding:15px}.source-row{padding:11px 0;border-bottom:1px solid var(--line)}.source-row:last-child{border:0}.source-row strong{display:block;margin-bottom:3px}.source-row span{font-size:12px;color:var(--muted)}
+.legend{font-size:12px;color:var(--muted);margin-top:8px}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}.factor-layout{grid-template-columns:1fr}.govgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:650px){header{position:static}.kpis{grid-template-columns:1fr 1fr}.govgrid{grid-template-columns:1fr}.chart{height:250px}}
+
+.tip{position:fixed;display:none;z-index:9999;max-width:330px;background:#101828;color:#fff;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.45;box-shadow:0 10px 30px #0005;pointer-events:none}
+.help{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;background:#e9efff;color:#175cd3;font-size:11px;font-weight:800;cursor:help;margin-left:4px;vertical-align:1px}
+.term{border-bottom:1px dotted #98a2b3;cursor:help}
+.glossary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.gloss{padding:14px}.gloss h3{margin:0 0 5px;font-size:16px}.gloss p{margin:0;color:#475467;font-size:13px;line-height:1.5}
+.hover-note{font-size:12px;color:#667085;margin:5px 0 8px}
+@media(max-width:700px){.glossary-grid{grid-template-columns:1fr}}
+
+.year-factor{padding:14px;position:relative}
+.year-factor h3{font-size:15px;margin:0 0 6px}
+.year-factor .yfvalue{font-size:22px;font-weight:800;margin:5px 0}
+.year-factor .yfstatus{font-size:12px;color:#667085;line-height:1.4}
+.year-factor .mini{height:6px;background:#eef2f6;border-radius:999px;overflow:hidden;margin:10px 0}
+.year-factor .mini > span{display:block;height:100%;background:#175cd3}
+.year-factor .exact{border-left:4px solid #067647}.year-factor .carry{border-left:4px solid #b54708}.year-factor .none{border-left:4px solid #98a2b3}
+</style>
+</head>
+<body><div id="globalTip" class="tip"></div>
+<header>
+<div class="wrap head">
+ <div><h1>Tablero de Educación en México</h1><div class="sub">Comparativas por año, factores integrados, gobiernos, países y medidas posibles. Pasa el mouse sobre gráficas, términos y símbolos de ayuda para ver explicaciones sin abandonar la página.</div></div>
+ <nav>
+  <button class="tab active" data-view="resumen">Resumen</button>
+  <button class="tab" data-view="anios">Comparar por año</button>
+  <button class="tab" data-view="factores">20 factores</button>
+  <button class="tab" data-view="gobiernos">Gobiernos</button>
+  <button class="tab" data-view="comparapaises">Comparar países</button>
+  <button class="tab" data-view="acciones">Qué hacer</button>
+  <button class="tab" data-view="glosario">Diccionario</button>
+  <button class="tab" data-view="fuentes">Fuentes</button>
+ </nav>
+</div>
+</header>
+
+<main>
+<div class="notice"><strong>Metodología:</strong> no se asignan porcentajes de “culpa” a los factores. Las pruebas PISA se aplican por ciclos, no cada año, y algunos cuestionarios cambian entre ciclos. Por eso el tablero sólo muestra comparativas temporales donde la fuente permite una comparación válida. Último PISA publicado: <strong>2025</strong> (resultados publicados por la OCDE el 8 de septiembre de 2026). Para 2026 todavía no existe un PISA 2026: PISA se aplica por ciclos, no anualmente.</div>
+
+<section id="resumen" class="view active">
+ <div class="kpis">
+  <div class="kpi"><div class="label"><span class="term" data-tip="PISA: Programa para la Evaluación Internacional de los Estudiantes, coordinado por la OCDE. Evalúa a jóvenes de alrededor de 15 años.">PISA</span> Matemáticas 2025</div><div class="value">388</div><div class="foot">OCDE 463 · <span class="term" data-tip="Brecha −75 significa que México obtuvo 75 puntos PISA menos que el promedio de la OCDE: 388 frente a 463. No es −75%.">brecha −75</span></div></div>
+  <div class="kpi"><div class="label">PISA Lectura 2025</div><div class="value">408</div><div class="foot">OCDE 461 · <span class="term" data-tip="Brecha −53 significa 53 puntos PISA menos que el promedio OCDE, no 53 por ciento menos.">brecha −53</span></div></div>
+  <div class="kpi"><div class="label">PISA Ciencias 2025</div><div class="value">414</div><div class="foot">OCDE 482 · <span class="term" data-tip="Brecha −68 significa 68 puntos PISA menos que el promedio OCDE, no 68 por ciento menos.">brecha −68</span></div></div>
+  <div class="kpi"><div class="label">Nivel ≥2 Matemáticas</div><div class="value">30%</div><div class="foot">OCDE 65%</div></div>
+  <div class="kpi"><div class="label">Problemas computacionales</div><div class="value">453</div><div class="foot">OCDE 500</div></div>
+  <div class="kpi"><div class="label">Familia pregunta por escuela</div><div class="value">63%</div><div class="foot">2022: 71%</div></div>
+ </div>
+
+ <div class="section"><h2>Tendencia principal de aprendizaje</h2>
+  <div class="card">
+   <h3>PISA México 2000–2025</h3><div class="meta">Serie histórica oficial OCDE · PISA 2025 publicado el 8 Sep 2026</div>
+   <div class="hover-note">💡 Pasa el mouse sobre cada punto para ver puntaje, gobierno federal y contexto del ciclo.</div><div class="chart tall"><canvas id="pisaOverview"></canvas></div>
+   <div class="sourcebox"><strong>Fuente:</strong> OECD, PISA 2025 Results — Mexico Country Note, Tables I.B1.2a.36–38. <a target="_blank" href="https://www.oecd.org/en/publications/pisa-2025-results-volume-i-country-notes_2d4ff9ea-en/mexico_85702d30-en.html">Abrir fuente oficial ↗</a></div>
+  </div>
+ </div>
+
+ <div class="section"><h2>Indicadores con cambio 2018→2022</h2>
+  <div class="grid2">
+   <div class="card">
+    <h3>Participación familiar con docentes</h3><div class="meta"><span class="badge green">Mejora parcial</span></div>
+    <div class="chart"><canvas id="parentSummary"></canvas></div>
+    <div class="sourcebox">Familias que hablaron sobre progreso por iniciativa propia: 26%→42%; por iniciativa docente: 48%→45%. <a target="_blank" href="https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/mexico_519eaf88-en.html">OECD Country Note ↗</a></div>
+   </div>
+   <div class="card">
+    <h3>Problemas de personal escolar</h3><div class="meta"><span class="badge red">Deterioro</span></div>
+    <div class="chart"><canvas id="staffSummary"></canvas></div>
+    <div class="sourcebox">Escuelas afectadas por falta de docentes: 25%→31%; personal inadecuado/poco calificado: 9%→18%. <a target="_blank" href="https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/mexico_519eaf88-en.html">OECD Country Note ↗</a></div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section id="anios" class="view">
+ <div class="section">
+  <h2>Comparar por año / ciclo</h2>
+  <div class="card">
+   <div class="controls">
+    <div class="control"><label>Indicador</label>
+     <select id="metricSelect">
+      <option value="pisa_math">PISA — Matemáticas</option>
+      <option value="pisa_read">PISA — Lectura</option>
+      <option value="pisa_sci">PISA — Ciencias</option>
+      <option value="parents">Participación familiar con docentes</option>
+      <option value="staff">Escasez / calidad de personal</option>
+     </select>
+    </div>
+   </div>
+   <h3 id="metricTitle"></h3><div class="meta" id="metricMeta"></div>
+   <div class="chart tall"><canvas id="metricChart"></canvas></div>
+   <div id="metricTable"></div>
+   <div class="sourcebox" id="metricSource"></div>
+  </div>
+ </div>
+</section>
+
+
+<section id="factores" class="view">
+ <div class="section"><h2>20 factores — por factor o por año</h2>
+ <div class="notice"><strong>Importante:</strong> muchos indicadores educativos no se miden cada año. Cuando eliges un año sin medición exacta, el tablero muestra <strong>“sin medición ese año”</strong> y, cuando sirve, el <strong>último dato disponible hasta ese momento</strong>. Así puedes comparar 2024 vs 2025 sin inventar cifras anuales.</div>
+ <div class="card" style="margin-bottom:13px">
+  <div class="controls">
+   <button id="modeFactor" class="tab active" type="button">Ver un factor a través del tiempo</button>
+   <button id="modeYear" class="tab" type="button">Ver todos los factores en un año</button>
+  </div>
+ </div>
+
+ <div id="factorMode">
+  <div class="factor-layout">
+   <div class="card factor-list" id="factorList"></div>
+   <div class="card factor-detail">
+    <div id="factorDetail"></div>
+    <div class="hover-note">💡 La gráfica inferior usa sólo los años con medición válida. Los huecos se explican en la tabla.</div>
+    <div class="chart tall"><canvas id="factorHistoryChart"></canvas></div>
+    <div id="factorHistoryTable"></div>
+   </div>
+  </div>
+ </div>
+
+ <div id="yearMode" style="display:none">
+  <div class="card">
+   <div class="controls">
+    <div class="control"><label>Año</label>
+     <select id="yearSnapshot">
+      <option>2000</option><option>2003</option><option>2006</option><option>2009</option><option>2012</option><option>2015</option><option>2018</option>
+      <option>2019</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option selected>2024</option><option>2025</option><option>2026</option>
+     </select>
+    </div>
+   </div>
+   <h3 id="yearTitle"></h3>
+   <div class="meta" id="yearMeta"></div>
+   <div id="yearFactorGrid" class="glossary-grid"></div>
+  </div>
+ </div>
+ </div>
+</section>
+<section id="gobiernos" class="view">
+ <div class="section"><h2>Gobiernos y contexto educativo</h2>
+ <div class="notice">El presidente en funciones cuando se aplicó PISA <strong>no es automáticamente responsable</strong> del resultado: un estudiante de 15 años acumula escolaridad bajo varios gobiernos. Esta vista muestra contexto, no causalidad.</div>
+ <div class="govgrid">
+  <div class="card gov"><h3>Vicente Fox</h3><div class="years">2000–2006</div><ul><li>PISA lectura 2000: 422</li><li>2003: M 385 · L 400</li><li>2006: M 406 · L 410 · C 410</li><li>Expansión de cobertura y programas tecnológicos.</li></ul></div>
+  <div class="card gov"><h3>Felipe Calderón</h3><div class="years">2006–2012</div><ul><li>2009: M 419 · L 425 · C 416</li><li>2012: M 413 · L 424 · C 415</li><li>ENLACE y metas explícitas de desempeño.</li></ul></div>
+  <div class="card gov"><h3>Enrique Peña Nieto</h3><div class="years">2012–2018</div><ul><li>2015: M 408 · L 423 · C 416</li><li>2018: M 409 · L 420 · C 419</li><li>Reforma educativa, INEE y evaluación docente.</li></ul></div>
+  <div class="card gov"><h3>Andrés M. López Obrador</h3><div class="years">2018–2024</div><ul><li>2022: M 395 · L 415 · C 410</li><li>Pandemia y cierres prolongados.</li><li>Nueva Escuela Mexicana y cambios institucionales.</li></ul></div>
+  <div class="card gov"><h3>Claudia Sheinbaum</h3><div class="years">2024–actualidad</div><ul><li>PISA 2025 ya fue publicado: M 388 · L 408 · C 414.</li><li>No debe interpretarse como resultado de su gobierno: tomó posesión en octubre de 2024 y el alumnado acumuló casi toda su escolaridad antes.</li></ul></div>
+ </div>
+ <div class="card" style="margin-top:13px"><h3>Serie PISA con gobiernos de referencia</h3><div class="chart tall"><canvas id="govChart"></canvas></div><div class="sourcebox"><a target="_blank" href="https://www.oecd.org/en/publications/pisa-2025-results-volume-i-country-notes_2d4ff9ea-en/mexico_85702d30-en.html">Fuente OCDE de la serie histórica ↗</a></div></div>
+ </div>
+</section>
+
+
+<section id="comparapaises" class="view">
+ <div class="section"><h2>México frente a otros sistemas — <span class="term" data-tip="PISA compara el desempeño de estudiantes de aproximadamente 15 años entre sistemas educativos.">PISA 2025</span></h2>
+  <div class="notice">Comparar con países líderes permite dimensionar la brecha. También incluimos Chile como referencia latinoamericana y el promedio OCDE. Los porcentajes de nivel ≥2 son especialmente útiles porque muestran cuántos jóvenes dominan al menos las competencias básicas.</div>
+  <div class="grid2">
+   <div class="card"><h3>Puntajes medios 2025</h3><div class="meta">México vs OCDE y líderes seleccionados</div><div class="chart tall"><canvas id="countryScores"></canvas></div>
+    <div class="sourcebox">Fuente: OECD PISA 2025. <a target="_blank" href="https://www.oecd.org/en/publications/pisa-2025-results-volume-i_73451bc5-en/full-report/student-performance-in-pisa-2025_23e075c2.html">Resultados globales ↗</a></div></div>
+   <div class="card"><h3>Alumnos con nivel básico o superior</h3><div class="meta">Porcentaje ≥ Nivel 2, PISA 2025</div><div class="chart tall"><canvas id="countryLevel2"></canvas></div>
+    <div class="sourcebox">México: M 30%, L ~50%, C ~50%; Chile: 41%, 62%, 63%; Estonia: 83%, 83%, 90%; Japón: 84%, 81%, 89%; Singapur: 89%, 86%, 90%. Fuentes: notas país OCDE PISA 2025.</div></div>
+  </div>
+  <div class="card" style="margin-top:13px"><h3>Lectura rápida de la brecha</h3>
+   <table class="datatable"><thead><tr><th>Sistema</th><th>Matemáticas ≥2</th><th>Lectura ≥2</th><th>Ciencias ≥2</th><th>Qué nos dice</th></tr></thead><tbody>
+    <tr><td>México</td><td>30%</td><td>~50%</td><td>~50%</td><td>7 de cada 10 no llegan al nivel básico en matemáticas.</td></tr>
+    <tr><td>Chile</td><td>41%</td><td>62%</td><td>63%</td><td>Referencia regional que también está bajo OCDE, pero supera a México.</td></tr>
+    <tr><td>OCDE</td><td>65%</td><td>69%</td><td>74%</td><td>Punto de referencia internacional.</td></tr>
+    <tr><td>Estonia</td><td>83%</td><td>83%</td><td>90%</td><td>Alto desempeño europeo con amplia competencia básica.</td></tr>
+    <tr><td>Japón</td><td>84%</td><td>81%</td><td>89%</td><td>Alto desempeño y gran proporción de alumnos competentes.</td></tr>
+    <tr><td>Singapur</td><td>89%</td><td>86%</td><td>90%</td><td>Uno de los sistemas líderes mundiales.</td></tr>
+   </tbody></table>
+  </div>
+ </div>
+</section>
+
+<section id="acciones" class="view">
+ <div class="section"><h2>Medidas para levantar el aprendizaje</h2>
+ <div class="notice">Estas medidas no son una “receta PISA”. Son líneas de acción coherentes con la evidencia que la OCDE destaca en PISA 2025 y con los problemas observados en México. Deben probarse y medirse con indicadores de dominio real.</div>
+ <div class="card">
+  <table class="datatable"><thead><tr><th>Prioridad</th><th>Medida</th><th>Problema que ataca</th><th>Cómo medirla</th><th>Horizonte</th></tr></thead><tbody>
+   <tr><td>1</td><td><strong>Diagnóstico temprano + tutoría intensiva</strong></td><td>Rezago acumulado en lectura y matemáticas</td><td>% de alumnos que pasan de debajo de nivel esperado a dominio; evaluaciones cada 8–12 semanas</td><td>1–3 años</td></tr>
+   <tr><td>2</td><td><strong>Promoción con dominio y recuperación</strong>, no simple reprobación</td><td>Avanzar de grado con huecos fundamentales</td><td>Dominio de competencias esenciales antes/después de intervención</td><td>1–3 años</td></tr>
+   <tr><td>3</td><td><strong>Programa nacional de aprendizaje en casa</strong> con microactividades para padres</td><td>Caída del apoyo familiar: preguntar por escuela 71%→63%; hablar de problemas 56%→42%</td><td>Participación semanal + progreso en lectura/matemáticas</td><td>1–5 años</td></tr>
+   <tr><td>4</td><td><strong>Formación docente práctica</strong>: explicación, manejo de aula, feedback y enseñanza explícita</td><td>Convertir apoyo docente en aprendizaje efectivo</td><td>Observación de aula + crecimiento del alumno, no sólo cursos tomados</td><td>2–5 años</td></tr>
+   <tr><td>5</td><td><strong>Recursos dirigidos a escuelas con mayor necesidad</strong></td><td>48% reporta falta de materiales y 50% infraestructura insuficiente</td><td>Inventario verificable + reducción de carencias + resultados</td><td>1–6 años</td></tr>
+   <tr><td>6</td><td><strong>Disciplina digital y celulares</strong></td><td>37% reporta distracción digital en ciencias</td><td>Distracción, tiempo efectivo de clase y aprendizaje</td><td>Meses–2 años</td></tr>
+   <tr><td>7</td><td><strong>IA como tutor/feedback, no sustituto del razonamiento</strong></td><td>Uso masivo de IA sin garantía de comprensión</td><td>Resolución sin asistencia + transferencia a problemas nuevos</td><td>1–3 años</td></tr>
+   <tr><td>8</td><td><strong>Sistema estable de evaluación nacional</strong></td><td>Falta de continuidad y reacción tardía</td><td>Series anuales comparables por escuela/estado y publicación abierta</td><td>Permanente</td></tr>
+  </tbody></table>
+  <div class="sourcebox">La OCDE PISA 2025 destaca fortalecer habilidades docentes prácticas, dirigir recursos según necesidad y usar IA de forma focalizada para feedback/práctica personalizada sin sustituir el esfuerzo cognitivo. <a target="_blank" href="https://www.oecd.org/en/publications/pisa-2025-results-volume-i_73451bc5-en/full-report.html">Informe PISA 2025 ↗</a></div>
+ </div>
+ </div>
+</section>
+
+
+<section id="glosario" class="view">
+ <div class="section"><h2>Diccionario rápido</h2>
+ <div class="notice">Esta sección traduce los términos técnicos del tablero a lenguaje común. Los mismos conceptos también aparecen como ayudas emergentes al pasar el mouse.</div>
+ <div class="glossary-grid">
+  <div class="card gloss"><h3>OCDE</h3><p><strong>Organización para la Cooperación y el Desarrollo Económicos.</strong> Agrupa países y produce estadísticas y análisis comparables de economía, educación y políticas públicas. México es miembro.</p></div>
+  <div class="card gloss"><h3>PISA</h3><p><strong>Programme for International Student Assessment.</strong> Evaluación internacional de estudiantes de aproximadamente 15 años en matemáticas, lectura y ciencias. No se aplica todos los años.</p></div>
+  <div class="card gloss"><h3>Brecha −75</h3><p>Quiere decir que México está <strong>75 puntos PISA por debajo</strong> del valor de comparación. Por ejemplo: México 388 y OCDE 463 → 388 − 463 = −75. No significa −75%.</p></div>
+  <div class="card gloss"><h3>Nivel 2</h3><p>Umbral que PISA utiliza como referencia de <strong>competencia básica</strong>. Estar debajo de Nivel 2 indica dificultades para aplicar conocimientos y habilidades fundamentales en situaciones relativamente sencillas.</p></div>
+  <div class="card gloss"><h3>Promedio OCDE</h3><p>Promedio de los países miembros de la OCDE que participan en el indicador. Sirve como referencia; no significa que todos esos países tengan el mismo desempeño.</p></div>
+  <div class="card gloss"><h3>PPP / PPA</h3><p><strong>Paridad de poder adquisitivo.</strong> Ajusta cantidades de dinero para hacer comparaciones internacionales considerando diferencias en el costo de vida.</p></div>
+  <div class="card gloss"><h3>N/D</h3><p><strong>No disponible / no comparable.</strong> No significa que el factor no existiera; significa que no contamos con una medición suficientemente homogénea para ese año.</p></div>
+  <div class="card gloss"><h3>Proxy</h3><p>Indicador indirecto. Se usa cuando el fenómeno exacto no se mide. Por ejemplo, PISA puede servir como resultado asociado al rezago, pero no mide directamente la velocidad con que una escuela intervino.</p></div>
+  <div class="card gloss"><h3>Correlación ≠ causalidad</h3><p>Que dos cosas ocurran al mismo tiempo no demuestra que una causó la otra. El tablero muestra coincidencias temporales para investigar, no para adjudicar culpabilidad automáticamente.</p></div>
+  <div class="card gloss"><h3>Estadísticamente significativo</h3><p>Indica que la diferencia observada es suficientemente grande frente a la incertidumbre de la muestra como para considerarla poco compatible con una variación aleatoria.</p></div>
+ </div></div>
+</section>
+
+<section id="fuentes" class="view">
+ <div class="section"><h2>Referencias verificables</h2>
+  <div class="card sources">
+   <div class="source-row"><strong>OECD — PISA 2025 Country Note: Mexico</strong><span>Fuente principal más reciente: puntajes 2025, tendencias, nivel 2, recursos, familia, tecnología, IA, disciplina y asistencia.</span><br><a target="_blank" href="https://www.oecd.org/en/publications/pisa-2025-results-volume-i-country-notes_2d4ff9ea-en/mexico_85702d30-en.html">Abrir ↗</a></div>
+   <div class="source-row"><strong>OECD — PISA 2025 Results Volume I</strong><span>Resultados globales, comparaciones internacionales y recomendaciones generales.</span><br><a target="_blank" href="https://www.oecd.org/en/publications/pisa-2025-results-volume-i_73451bc5-en/full-report.html">Abrir ↗</a></div>
+   <div class="source-row"><strong>OECD — PISA 2022 Country Note: Mexico</strong><span>Resultados 2022, parental involvement, repetición, COVID, personal escolar, autonomía y otros indicadores.</span><br><a target="_blank" href="https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/mexico_519eaf88-en.html">Abrir ↗</a></div>
+   <div class="source-row"><strong>OECD — Overview of performance trends in Mexico</strong><span>Serie 2000–2022 de matemáticas, lectura y ciencias.</span><br><a target="_blank" href="https://www.oecd.org/en/publications/pisa-2025-results-volume-i-country-notes_2d4ff9ea-en/mexico_85702d30-en.html">Abrir ↗</a></div>
+   <div class="source-row"><strong>OECD Education GPS — Mexico</strong><span>Indicadores comparables, nivel 2, diferencias socioeconómicas y métricas de desempeño.</span><br><a target="_blank" href="https://gpseducation.oecd.org/CountryProfile?primaryCountry=MEX&topic=PI">Abrir ↗</a></div>
+   <div class="source-row"><strong>OECD — PISA 2022 Volume II: grade repetition / automatic promotion</strong><span>Contexto internacional sobre repetición y sistemas con promoción automática.</span><br><a target="_blank" href="https://www.oecd.org/en/publications/pisa-2022-results-volume-ii_a97db61c-en/full-report/component-11.html">Abrir ↗</a></div>
+   <div class="source-row"><strong>DOF — Acuerdo 10/09/23</strong><span>Normas mexicanas de evaluación, acreditación, promoción, regularización y certificación en educación básica.</span><br><a target="_blank" href="https://www.dof.gob.mx/nota_detalle.php?codigo=5703099&fecha=27/09/2023">Abrir ↗</a></div>
+  </div>
+ </div>
+</section>
+</main>
+
+<script>
+const C={a:"#175cd3",b:"#b54708",c:"#067647",d:"#7f56d9",grid:"#e4e7ec",text:"#475467"};
+
+function setup(c){const dpr=window.devicePixelRatio||1,r=c.parentElement.getBoundingClientRect();c.width=r.width*dpr;c.height=r.height*dpr;const x=c.getContext("2d");x.setTransform(dpr,0,0,dpr,0,0);return [x,r.width,r.height]}
+const govByYear={
+ "2000":"Vicente Fox (inició dic. 2000)","2003":"Vicente Fox","2006":"Vicente Fox / Felipe Calderón (transición dic. 2006)",
+ "2009":"Felipe Calderón","2012":"Felipe Calderón / Enrique Peña Nieto (transición dic. 2012)",
+ "2015":"Enrique Peña Nieto","2018":"Enrique Peña Nieto / Andrés Manuel López Obrador (transición dic. 2018)",
+ "2022":"Andrés Manuel López Obrador","2025":"Claudia Sheinbaum (desde oct. 2024; el alumnado se formó principalmente bajo gobiernos previos)",
+ "2019":"Andrés Manuel López Obrador"
+};
+const globalTip=document.getElementById("globalTip");
+function showTip(ev,html){globalTip.innerHTML=html;globalTip.style.display="block";moveTip(ev)}
+function moveTip(ev){let x=ev.clientX+14,y=ev.clientY+14;const w=340,h=160;if(x+w>innerWidth)x=ev.clientX-w-15;if(y+h>innerHeight)y=ev.clientY-h-15;globalTip.style.left=x+"px";globalTip.style.top=y+"px"}
+function hideTip(){globalTip.style.display="none"}
+function attachStaticTips(){
+ document.querySelectorAll("[data-tip]").forEach(el=>{
+  el.onmouseenter=e=>showTip(e,el.dataset.tip);el.onmousemove=moveTip;el.onmouseleave=hideTip;
+ });
+}
+function line(id,labels,series,min,max){
+ const c=document.getElementById(id); let pts=[];
+ const draw=()=>{let [x,W,H]=setup(c),p={l:45,r:14,t:25,b:42};pts=[];x.clearRect(0,0,W,H);x.font="11px system-ui";x.strokeStyle=C.grid;x.fillStyle=C.text;
+ for(let i=0;i<=4;i++){let y=p.t+(H-p.t-p.b)*i/4;x.beginPath();x.moveTo(p.l,y);x.lineTo(W-p.r,y);x.stroke();x.fillText(Math.round(max-(max-min)*i/4),5,y+4)}
+ labels.forEach((z,i)=>{let xx=p.l+(W-p.l-p.r)*(labels.length===1?0:i/(labels.length-1));x.fillText(z,xx-13,H-13)});
+ let lx=p.l;series.forEach((sr,j)=>{let col=[C.a,C.b,C.c,C.d][j%4];x.strokeStyle=col;x.lineWidth=2.5;x.beginPath();let started=false;sr.data.forEach((v,i)=>{if(v==null)return;let xx=p.l+(W-p.l-p.r)*(labels.length===1?0:i/(labels.length-1)),yy=p.t+(max-v)/(max-min)*(H-p.t-p.b);if(!started){x.moveTo(xx,yy);started=true}else x.lineTo(xx,yy)});x.stroke();sr.data.forEach((v,i)=>{if(v==null)return;let xx=p.l+(W-p.l-p.r)*(labels.length===1?0:i/(labels.length-1)),yy=p.t+(max-v)/(max-min)*(H-p.t-p.b);x.fillStyle=col;x.beginPath();x.arc(xx,yy,4,0,Math.PI*2);x.fill();pts.push({x:xx,y:yy,label:labels[i],series:sr.name,value:v,extra:sr.tooltip?sr.tooltip(labels[i],v):""})});x.fillStyle=col;x.fillRect(lx,5,10,4);x.fillStyle=C.text;x.fillText(sr.name,lx+14,10);lx+=x.measureText(sr.name).width+40})};
+ draw();window.addEventListener("resize",draw);
+ c.onmousemove=e=>{const r=c.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;let q=pts.map(p=>({...p,d:(p.x-mx)**2+(p.y-my)**2})).sort((a,b)=>a.d-b.d)[0];if(q&&q.d<220){c.style.cursor="pointer";showTip(e,`<strong>${q.series} · ${q.label}</strong><br>Valor: <strong>${q.value}</strong>${q.extra?`<br>${q.extra}`:""}${govByYear[q.label]?`<br><br>Gobierno federal: <strong>${govByYear[q.label]}</strong>`:""}`)}else{c.style.cursor="default";hideTip()}};
+ c.onmouseleave=hideTip; return draw;
+}
+function bar(id,labels,series,max){
+ const c=document.getElementById(id); let bars=[];
+ const draw=()=>{let [x,W,H]=setup(c),p={l:43,r:12,t:30,b:65};bars=[];x.clearRect(0,0,W,H);x.font="11px system-ui";x.strokeStyle=C.grid;x.fillStyle=C.text;
+ for(let i=0;i<=4;i++){let y=p.t+(H-p.t-p.b)*i/4;x.beginPath();x.moveTo(p.l,y);x.lineTo(W-p.r,y);x.stroke();x.fillText(Math.round(max-max*i/4),5,y+4)}
+ let group=(W-p.l-p.r)/labels.length,bw=Math.min(42,group*.72/series.length);labels.forEach((lab,i)=>{series.forEach((sr,j)=>{let v=sr.data[i],xx=p.l+i*group+group/2-series.length*bw/2+j*bw,yy=p.t+(max-v)/max*(H-p.t-p.b),hh=H-p.b-yy;x.fillStyle=[C.a,C.b,C.c,C.d][j%4];x.fillRect(xx,yy,bw-3,hh);x.fillStyle=C.text;x.fillText(v+(sr.suffix||""),xx,yy-4);bars.push({x:xx,y:yy,w:bw-3,h:hh,label:lab,series:sr.name,value:v,suffix:sr.suffix||"",extra:sr.tooltip?sr.tooltip(lab,v):""})});let words=lab.split(" ");words.slice(0,3).forEach((w,k)=>x.fillText(w,p.l+i*group+5,H-37+k*12))});
+ let lx=p.l;series.forEach((sr,j)=>{x.fillStyle=[C.a,C.b,C.c,C.d][j%4];x.fillRect(lx,5,10,7);x.fillStyle=C.text;x.fillText(sr.name,lx+14,12);lx+=x.measureText(sr.name).width+40})};
+ draw();window.addEventListener("resize",draw);
+ c.onmousemove=e=>{const r=c.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;const q=bars.find(b=>mx>=b.x&&mx<=b.x+b.w&&my>=b.y&&my<=b.y+b.h);if(q){c.style.cursor="pointer";showTip(e,`<strong>${q.label}</strong><br>${q.series}: <strong>${q.value}${q.suffix}</strong>${q.extra?`<br>${q.extra}`:""}${govByYear[q.series]?`<br>Gobierno: <strong>${govByYear[q.series]}</strong>`:""}`)}else{c.style.cursor="default";hideTip()}};
+ c.onmouseleave=hideTip; return draw;
+}
+const PISA_Y=["2000","2003","2006","2009","2012","2015","2018","2022","2025"];
+const M=[null,385,406,419,413,408,409,395,388],R=[422,400,410,425,424,423,420,415,408],S=[null,null,410,416,415,416,419,410,414];
+line("pisaOverview",PISA_Y,[
+ {name:"Matemáticas",data:M,tooltip:(y,v)=>y==="2025"?"México: 388 · OCDE: 463 · brecha: −75 puntos.":""},
+ {name:"Lectura",data:R,tooltip:(y,v)=>y==="2025"?"México: 408 · OCDE: 461 · brecha: −53 puntos.":""},
+ {name:"Ciencias",data:S,tooltip:(y,v)=>y==="2025"?"México: 414 · OCDE: 482 · brecha: −68 puntos.":""}
+],370,440);
+bar("parentSummary",["Iniciativa familiar","Iniciativa docente"],[{name:"2018",data:[26,48],suffix:"%"},{name:"2022",data:[42,45],suffix:"%"}],60);
+bar("staffSummary",["Falta docentes","Personal inadecuado"],[{name:"2018",data:[25,9],suffix:"%"},{name:"2022",data:[31,18],suffix:"%"}],40);
+line("govChart",["2003 Fox","2006 Fox/Cal.","2009 Calderón","2012 Cal./Peña","2015 Peña","2018 Peña/AMLO","2022 AMLO","2025 AMLO/Shein."],[{name:"Matemáticas",data:[385,406,419,413,408,409,395,388]}],370,430);
+
+const metrics={
+ pisa_math:{title:"PISA — Matemáticas",meta:"Puntos PISA de estudiantes de 15 años.",type:"line",labels:PISA_Y,data:M,min:370,max:430,src:"OECD PISA 2025, Mexico Country Note — performance trends",url:"https://www.oecd.org/en/publications/pisa-2025-results-volume-i-country-notes_2d4ff9ea-en/mexico_85702d30-en.html"},
+ pisa_read:{title:"PISA — Lectura",meta:"Puntos PISA de estudiantes de 15 años.",type:"line",labels:PISA_Y,data:R,min:380,max:440,src:"OECD PISA 2025, Mexico Country Note — performance trends",url:"https://www.oecd.org/en/publications/pisa-2025-results-volume-i-country-notes_2d4ff9ea-en/mexico_85702d30-en.html"},
+ pisa_sci:{title:"PISA — Ciencias",meta:"Serie disponible desde 2006.",type:"line",labels:PISA_Y,data:S,min:390,max:430,src:"OECD PISA 2025, Mexico Country Note — performance trends",url:"https://www.oecd.org/en/publications/pisa-2025-results-volume-i-country-notes_2d4ff9ea-en/mexico_85702d30-en.html"},
+ parents:{title:"Participación familiar con docentes",meta:"Porcentaje de estudiantes en escuelas donde al menos la mitad de las familias discutió el progreso del hijo con un docente.",type:"bar",labels:["Iniciativa familiar","Iniciativa docente"],series:[{name:"2018",data:[26,48],suffix:"%"},{name:"2022",data:[42,45],suffix:"%"}],max:60,src:"OECD PISA 2022 Country Note — Mexico",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/mexico_519eaf88-en.html"},
+ staff:{title:"Problemas de personal escolar",meta:"Porcentaje de estudiantes en escuelas cuyos directores reportaron que la instrucción era obstaculizada.",type:"bar",labels:["Falta docentes","Personal inadecuado"],series:[{name:"2018",data:[25,9],suffix:"%"},{name:"2022",data:[31,18],suffix:"%"}],max:40,src:"OECD PISA 2022 Country Note — Mexico",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/mexico_519eaf88-en.html"}
+};
+let metricDraw=null;
+function renderMetric(){
+ let k=document.getElementById("metricSelect").value,m=metrics[k],can=document.getElementById("metricChart");
+ document.getElementById("metricTitle").textContent=m.title;document.getElementById("metricMeta").textContent=m.meta;
+ // replace canvas to avoid stacked resize handlers drawing obsolete datasets
+ can.outerHTML='<canvas id="metricChart"></canvas>';
+ if(m.type==="line") metricDraw=line("metricChart",m.labels,[{name:m.title.replace("PISA — ",""),data:m.data}],m.min,m.max);
+ else metricDraw=bar("metricChart",m.labels,m.series,m.max);
+ let rows="";
+ if(m.type==="line") m.labels.forEach((y,i)=>{if(m.data[i]!=null)rows+=`<tr><td>${y}</td><td>${m.data[i]}</td></tr>`});
+ else m.labels.forEach((lab,i)=>{rows+=`<tr><td>${lab}</td>${m.series.map(s=>`<td>${s.data[i]}${s.suffix||""}</td>`).join("")}</tr>`});
+ let heads=m.type==="line"?"<th>Ciclo</th><th>Valor</th>":`<th>Indicador</th>${m.series.map(s=>`<th>${s.name}</th>`).join("")}`;
+ document.getElementById("metricTable").innerHTML=`<table class="datatable"><thead><tr>${heads}</tr></thead><tbody>${rows}</tbody></table>`;
+ document.getElementById("metricSource").innerHTML=`<strong>Fuente:</strong> ${m.src}. <a target="_blank" href="${m.url}">Abrir fuente oficial ↗</a>`;
+}
+document.getElementById("metricSelect").addEventListener("change",renderMetric);renderMetric();
+
+const factors=[
+{id:1,n:"Bases débiles en lectura y matemáticas",block:"Aprendizaje",status:"red",label:"Problema fuerte",metric:"34% alcanzó nivel ≥2 en matemáticas; lectura 53%.",trend:"Comparado con 2012, aumentó 11 puntos porcentuales la proporción bajo nivel 2 en matemáticas y 5 puntos en lectura.",evidence:"Alta",source:"OECD PISA 2022",url:"https://gpseducation.oecd.org/CountryProfile?primaryCountry=MEX&topic=PI"},
+{id:2,n:"Promoción sin recuperación efectiva",block:"Política pública",status:"amber",label:"Riesgo de diseño",metric:"No existe una única tasa que mida “promover sin aprender”.",trend:"La norma vigente debe leerse por grado; repetir tampoco garantiza aprendizaje.",evidence:"Media",source:"DOF Acuerdo 10/09/23 + OECD sobre repetición",url:"https://www.dof.gob.mx/nota_detalle.php?codigo=5703099&fecha=27/09/2023"},
+{id:3,n:"Participación educativa del hogar",block:"Familia",status:"amber",label:"Mixto",metric:"Iniciativa familiar con docentes: 26% (2018) → 42% (2022).",trend:"Esta métrica mejoró; no mide toda la enseñanza cotidiana en casa.",evidence:"Alta para la métrica",source:"OECD PISA 2022 Country Note",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/mexico_519eaf88-en.html"},
+{id:4,n:"Efectividad real de la enseñanza",block:"Escuela",status:"amber",label:"Mixto",metric:"Resultados bajos aun cuando varios indicadores de apoyo docente son relativamente favorables.",trend:"Apoyo percibido y aprendizaje final son dimensiones diferentes.",evidence:"Media",source:"OECD PISA 2022 Country Note",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/mexico_519eaf88-en.html"},
+{id:5,n:"COVID y cierres escolares prolongados",block:"Entorno",status:"red",label:"Choque severo",metric:"62% reportó cierre >3 meses vs 51% OCDE.",trend:"Factor extraordinario para la caída 2018→2022.",evidence:"Alta",source:"OECD PISA 2022 Country Note",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/mexico_519eaf88-en.html"},
+{id:6,n:"Pobreza y desigualdad socioeconómica",block:"Entorno",status:"red",label:"Estructural",metric:"PISA documenta brechas de rendimiento por nivel socioeconómico.",trend:"Persistente; no puede atribuirse a un solo sexenio.",evidence:"Alta",source:"OECD Education GPS",url:"https://gpseducation.oecd.org/CountryProfile?primaryCountry=MEX&topic=PI"},
+{id:7,n:"Discontinuidad en evaluación y seguimiento",block:"Política pública",status:"amber",label:"Riesgo institucional",metric:"Cambios de instituciones y sistemas dificultan continuidad longitudinal.",trend:"No existe un porcentaje único de efecto causal.",evidence:"Media",source:"Marco institucional y series OECD",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/mexico_519eaf88-en.html"},
+{id:8,n:"Cambios de modelo educativo cada sexenio",block:"Política pública",status:"amber",label:"Discontinuidad",metric:"Reformas y contrarreformas frecuentes.",trend:"Debe analizarse por implementación, no sólo por decreto.",evidence:"Media",source:"DOF / OECD",url:"https://www.dof.gob.mx/"},
+{id:9,n:"Formación y disponibilidad docente desigual",block:"Escuela",status:"red",label:"Deterioro 2018→2022",metric:"Falta de docentes 25%→31%; personal inadecuado 9%→18%.",trend:"Ambas métricas empeoraron.",evidence:"Alta",source:"OECD PISA 2022 Country Note",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/mexico_519eaf88-en.html"},
+{id:10,n:"Recursos y gasto por estudiante",block:"Recursos",status:"red",label:"Restricción",metric:"México se ubica entre los sistemas de menor gasto por alumno dentro de la OCDE.",trend:"El efecto del gasto depende también de cómo se usa.",evidence:"Alta",source:"OECD Education at a Glance / PISA",url:"https://www.oecd.org/en/topics/education.html"},
+{id:11,n:"Infraestructura y materiales insuficientes",block:"Recursos",status:"amber",label:"Problema documentado",metric:"No incluimos una serie anual homogénea en esta versión.",trend:"Requiere integrar INEGI/SEP/Mejoredu con definiciones comparables.",evidence:"Media",source:"OECD/SEP; serie pendiente",url:"https://www.oecd.org/en/topics/education.html"},
+{id:12,n:"Uso inadecuado de tecnología",block:"Entorno",status:"amber",label:"Oportunidad/riesgo",metric:"PISA mide distracción y acceso digital, pero no una sola tasa de “mal uso”.",trend:"Debe separar tecnología educativa de entretenimiento/distracción.",evidence:"Media",source:"OECD PISA 2022",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-ii_a97db61c-en.html"},
+{id:13,n:"Disciplina y clima del salón",block:"Escuela",status:"amber",label:"Mixto",metric:"Indicadores de clima existen, pero varían según pregunta/ciclo.",trend:"No conviene mezclar preguntas distintas como si fueran serie anual.",evidence:"Alta para PISA 2022",source:"OECD PISA 2022",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-ii_a97db61c-en.html"},
+{id:14,n:"Ausentismo y retardos",block:"Familia / Escuela",status:"amber",label:"Pérdida de tiempo",metric:"PISA incluye asistencia y puntualidad, pero la comparabilidad debe revisarse por ciclo.",trend:"Impacta tiempo efectivo de aprendizaje.",evidence:"Alta",source:"OECD PISA",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-ii_a97db61c-en.html"},
+{id:15,n:"Intervención tardía ante rezago",block:"Aprendizaje",status:"red",label:"Acumulativo",metric:"Mayor proporción bajo nivel 2 que en 2012.",trend:"El resultado final sugiere que muchos rezagos no se corrigen a tiempo.",evidence:"Alta para resultado; media para mecanismo",source:"OECD Education GPS",url:"https://gpseducation.oecd.org/CountryProfile?primaryCountry=MEX&topic=PI"},
+{id:16,n:"Calidad del aprendizaje temprano",block:"Familia / Escuela",status:"amber",label:"Calidad > cobertura",metric:"98% de estudiantes PISA reportó ≥1 año de preescolar (OCDE 94%).",trend:"Cobertura reportada es alta; la calidad de la experiencia temprana es la cuestión.",evidence:"Alta",source:"OECD PISA 2022 Country Note",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/mexico_519eaf88-en.html"},
+{id:17,n:"Brechas rurales, indígenas y lingüísticas",block:"Entorno",status:"red",label:"Desigualdad focalizada",metric:"Múltiples fuentes nacionales documentan brechas; falta integrar una sola serie aquí.",trend:"Persistente y geográficamente desigual.",evidence:"Alta",source:"SEP / INEGI / OECD — integración pendiente",url:"https://www.inegi.org.mx/"},
+{id:18,n:"Gestión y autonomía escolar limitada",block:"Gestión",status:"amber",label:"Estructural",metric:"24% de alumnos en escuelas donde directores tienen responsabilidad principal de contratar docentes; OCDE 60%.",trend:"La OCDE observa mayor autonomía en muchos sistemas de alto desempeño.",evidence:"Alta",source:"OECD PISA 2022 Country Note",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/mexico_519eaf88-en.html"},
+{id:19,n:"Expectativas académicas bajas / cultura de 'con que pase'",block:"Cultura",status:"gray",label:"Hipótesis por medir",metric:"No existe una métrica nacional única que pruebe esta formulación.",trend:"No debe presentarse como hecho cuantificado sin estudio específico.",evidence:"Baja/pendiente",source:"Sin fuente única",url:""},
+{id:20,n:"Brecha entre currículo declarado y dominio real",block:"Política / Aprendizaje",status:"amber",label:"Brecha de implementación",metric:"Currículo puede fijar competencias ambiciosas mientras PISA muestra bajo dominio.",trend:"Es una comparación entre intención normativa y resultados, no una causalidad automática.",evidence:"Media-alta",source:"SEP/DOF + OECD PISA",url:"https://www.dof.gob.mx/"}
+];
+
+function showFactor(id){
+ const f=factors.find(x=>x.id===id),d=document.getElementById("factorDetail"),link=f.url?`<a target="_blank" href="${f.url}">Abrir referencia ↗</a>`:"Referencia cuantitativa pendiente";
+ d.innerHTML=`<span class="badge ${f.status}">${f.label}</span><h2>${f.id}. ${f.n}</h2><div class="meta">${f.block} · Fuerza de evidencia: <strong>${f.evidence}</strong></div><div class="metric">${f.metric}</div><p class="explain"><strong>Lectura:</strong> ${f.trend}</p><div class="sourcebox"><strong>Fuente / respaldo:</strong> ${f.source}. ${link}</div><p class="legend">Cuando no hay una serie comparable, el tablero lo dice expresamente en vez de convertir una opinión en un dato.</p>`;
+}
+
+
+const matrixFactors=[
+ {id:1,name:"Bases débiles en matemáticas",unit:"Puntos PISA",years:["2003","2006","2009","2012","2015","2018","2022","2025"],vals:[385,406,419,413,408,409,395,388],notes:["Dato","Dato","Dato","Dato","Dato","Dato","Dato"],src:"OECD PISA — tendencia histórica de México",url:"https://www.oecd.org/en/publications/pisa-2025-results-volume-i-country-notes_2d4ff9ea-en/mexico_85702d30-en.html",min:370,max:430},
+ {id:2,name:"Promoción / acreditación sin dominio",unit:"Indicador normativo",years:["2000","2003","2006","2009","2012","2015","2018","2022"],vals:[null,null,null,null,null,null,null,null],notes:["N/D","N/D","N/D","N/D · cambio normativo alrededor de 2012","Política/Contexto","Política/Contexto","Política/Contexto","Política/Contexto"],src:"DOF — reglas de evaluación, acreditación y promoción; no existe una serie PISA anual que mida 'promoción sin aprender'",url:"https://www.dof.gob.mx/nota_detalle.php?codigo=5703099&fecha=27/09/2023"},
+ {id:3,name:"Participación familiar con docentes",unit:"Porcentaje",years:["2018","2022"],vals:[26,42],notes:["Dato · iniciativa familiar","Dato · iniciativa familiar"],src:"OECD PISA 2022 Country Note — Mexico",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/mexico_519eaf88-en.html",min:0,max:60},
+ {id:4,name:"Efectividad / apoyo docente",unit:"Porcentaje",years:["2018","2022"],vals:[null,77],notes:["N/D en esta versión con la misma formulación","Dato · maestro se interesa por aprendizaje de cada alumno"],src:"OECD PISA 2022 Country Note — Mexico. Las preguntas pueden cambiar entre ciclos.",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/mexico_519eaf88-en.html",min:0,max:100},
+ {id:5,name:"COVID y cierres escolares",unit:"Porcentaje con cierre >3 meses",years:["2000","2003","2006","2009","2012","2015","2018","2022","2025"],vals:[0,0,0,0,0,0,0,62,null],notes:["No existía COVID-19","No existía COVID-19","No existía COVID-19","No existía COVID-19","No existía COVID-19","No existía COVID-19","No existía COVID-19","Dato sobre cierres","2025: secuela/contexto, no un nuevo cierre comparable"],src:"OECD PISA 2022 Country Note — Mexico",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/mexico_519eaf88-en.html",min:0,max:80},
+ {id:6,name:"Pobreza / desigualdad socioeconómica",unit:"Indicador PISA",years:["2000","2003","2006","2009","2012","2015","2018","2022"],vals:[null,null,null,null,null,null,null,null],notes:["N/D comparable aquí","N/D comparable aquí","N/D comparable aquí","N/D comparable aquí","N/D comparable aquí","N/D comparable aquí","Dato disponible en PISA, pendiente de integrar","Dato disponible en PISA, pendiente de integrar"],src:"OECD Education GPS / PISA. El factor existía en todos los ciclos; falta integrar una serie homogénea.",url:"https://gpseducation.oecd.org/CountryProfile?primaryCountry=MEX&topic=PI"},
+ {id:7,name:"Evaluación y seguimiento institucional",unit:"Contexto",years:["2000","2003","2006","2009","2012","2015","2018","2022"],vals:[null,null,null,null,null,null,null,null],notes:["Contexto institucional","Contexto institucional","Contexto institucional","Contexto institucional","Contexto institucional","INEE / evaluación","INEE / evaluación","Cambio institucional; no hay métrica causal única"],src:"OECD/DOF. Se documenta como línea institucional, no como porcentaje anual.",url:"https://www.oecd.org/en/topics/education.html"},
+ {id:8,name:"Cambios de modelo educativo",unit:"Contexto",years:["2000","2003","2006","2009","2012","2015","2018","2022"],vals:[null,null,null,null,null,null,null,null],notes:["Política/Contexto","Política/Contexto","Política/Contexto","Política/Contexto","Política/Contexto","Política/Contexto","Política/Contexto","Política/Contexto"],src:"DOF/SEP. No existe una escala anual objetiva de 'cantidad de cambio curricular'.",url:"https://www.dof.gob.mx/"},
+ {id:9,name:"Escasez de docentes",unit:"Porcentaje",years:["2018","2022","2025"],vals:[25,31,29],notes:["Dato","Dato","Dato · cambio 2022→2025 no significativo según OCDE"],src:"OECD PISA 2022 Country Note — Mexico",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/mexico_519eaf88-en.html",min:0,max:40},
+ {id:10,name:"Recursos / gasto por estudiante",unit:"USD PPP acumulados 6–15",years:["2019"],vals:[28900],notes:["Dato comparable citado por PISA; no es una serie anual"],src:"OECD PISA 2022 / Education finance context",url:"https://www.oecd.org/en/topics/education.html",min:0,max:80000},
+ {id:11,name:"Infraestructura y materiales",unit:"Indicador",years:["2000","2003","2006","2009","2012","2015","2018","2022"],vals:[null,null,null,null,null,null,null,null],notes:["N/D comparable","N/D comparable","N/D comparable","N/D comparable","N/D comparable","N/D comparable","Existe información, pendiente de homologar","Existe información, pendiente de homologar"],src:"SEP/INEGI/OECD — requiere homologar definiciones antes de graficar una tendencia.",url:"https://www.inegi.org.mx/"},
+ {id:12,name:"Distracción / uso inadecuado de tecnología",unit:"Porcentaje",years:["2000","2003","2006","2009","2012","2015","2018","2022"],vals:[null,null,null,null,null,null,null,25],notes:["No medido de forma comparable","No medido de forma comparable","No medido de forma comparable","No medido de forma comparable","No medido de forma comparable","No medido de forma comparable","N/D misma formulación","Dato 2022 · distracción propia"],src:"OECD PISA 2022. La disponibilidad de dispositivos y las preguntas digitales cambiaron mucho entre ciclos.",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-ii_a97db61c-en.html",min:0,max:40},
+ {id:13,name:"Disciplina y clima de salón",unit:"Porcentaje",years:["2000","2003","2006","2009","2012","2015","2018","2022"],vals:[null,null,null,null,null,null,null,15],notes:["N/D comparable","N/D comparable","N/D comparable","N/D comparable","N/D comparable","N/D comparable","N/D misma formulación","Dato · no puede trabajar bien"],src:"OECD PISA 2022. No se mezclan preguntas diferentes de otros ciclos como si fueran la misma serie.",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-ii_a97db61c-en.html",min:0,max:30},
+ {id:14,name:"Ausentismo / retardos",unit:"Porcentaje",years:["2000","2003","2006","2009","2012","2015","2018","2022"],vals:[null,null,null,null,null,null,29,null],notes:["N/D","N/D","N/D","N/D","N/D","N/D","Dato disponible para ausencia en comparación previa","Pendiente de integrar con formulación exactamente comparable"],src:"OECD PISA — la comparabilidad depende de la pregunta y ventana temporal.",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-ii_a97db61c-en.html",min:0,max:50},
+ {id:15,name:"Rezago no corregido a tiempo",unit:"Proxy: puntaje matemáticas",years:["2003","2006","2009","2012","2015","2018","2022","2025"],vals:[385,406,419,413,408,409,395,388],notes:["Proxy","Proxy","Proxy","Proxy","Proxy","Proxy","Proxy"],src:"OECD PISA. El puntaje es un resultado/proxy; no mide directamente la rapidez de intervención.",url:"https://www.oecd.org/en/publications/pisa-2025-results-volume-i-country-notes_2d4ff9ea-en/mexico_85702d30-en.html",min:370,max:430},
+ {id:16,name:"Aprendizaje temprano / preescolar",unit:"Porcentaje con ≥1 año",years:["2022"],vals:[98],notes:["Dato retrospectivo reportado por alumnos PISA"],src:"OECD PISA 2022 Country Note — Mexico",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/mexico_519eaf88-en.html",min:0,max:100},
+ {id:17,name:"Brechas rurales, indígenas y lingüísticas",unit:"Indicador",years:["2000","2003","2006","2009","2012","2015","2018","2022"],vals:[null,null,null,null,null,null,null,null],notes:["Factor existente; N/D homologado","Factor existente; N/D homologado","Factor existente; N/D homologado","Factor existente; N/D homologado","Factor existente; N/D homologado","Factor existente; N/D homologado","Datos parciales","Datos parciales"],src:"INEGI/SEP/OECD — se requiere integrar series específicas por población y territorio.",url:"https://www.inegi.org.mx/"},
+ {id:18,name:"Autonomía / gestión escolar",unit:"Porcentaje",years:["2022"],vals:[24],notes:["Dato · alumnos en escuelas donde directores tienen responsabilidad principal para contratar docentes"],src:"OECD PISA 2022 Country Note — Mexico; OCDE 60%.",url:"https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/mexico_519eaf88-en.html",min:0,max:100},
+ {id:19,name:"Expectativas bajas / 'con que pase'",unit:"Sin métrica única",years:["2000","2003","2006","2009","2012","2015","2018","2022"],vals:[null,null,null,null,null,null,null,null],notes:["No medido","No medido","No medido","No medido","No medido","No medido","No medido","No medido"],src:"No existe una serie nacional única que valide esta formulación. Debe tratarse como hipótesis hasta encontrar un indicador adecuado.",url:""},
+ {id:20,name:"Brecha currículo–aprendizaje real",unit:"Proxy: PISA",years:["2003","2006","2009","2012","2015","2018","2022","2025"],vals:[385,406,419,413,408,409,395,388],notes:["Proxy matemáticas","Proxy matemáticas","Proxy matemáticas","Proxy matemáticas","Proxy matemáticas","Proxy matemáticas","Proxy matemáticas"],src:"SEP/DOF para currículo + OECD PISA para resultados. No existe una escala directa de 'brecha curricular'.",url:"https://www.oecd.org/en/publications/pisa-2025-results-volume-i-country-notes_2d4ff9ea-en/mexico_85702d30-en.html",min:370,max:430}
+];
+
+function getMF(id){ return matrixFactors.find(f=>f.id===id); }
+
+function renderFactorHistory(id){
+ const f=getMF(id), can=document.getElementById("factorHistoryChart");
+ if(!f || !can) return;
+ can.outerHTML='<canvas id="factorHistoryChart"></canvas>';
+ const numeric=f.vals.filter(v=>v!==null);
+ if(numeric.length>=2){
+   line("factorHistoryChart",f.years,[{name:f.unit,data:f.vals}],f.min??Math.min(...numeric)*.9,f.max??Math.max(...numeric)*1.1);
+ } else if(numeric.length===1){
+   bar("factorHistoryChart",f.years,[{name:f.unit,data:f.vals.map(v=>v??0)}],f.max??Math.max(10,numeric[0]*1.2));
+ } else {
+   const c=document.getElementById("factorHistoryChart"),[x,W,H]=setup(c);
+   x.fillStyle="#667085";x.font="16px system-ui";x.textAlign="center";
+   x.fillText("Este factor no tiene una serie cuantitativa comparable.",W/2,H/2-10);
+   x.font="13px system-ui";x.fillText("La tabla muestra en qué años existe contexto, política o ausencia de medición.",W/2,H/2+18);
+ }
+ let rows=f.years.map((y,i)=>`<tr><td>${y}</td><td>${f.vals[i]===null?"—":f.vals[i]}</td><td>${f.notes[i]}</td></tr>`).join("");
+ document.getElementById("factorHistoryTable").innerHTML=`<table class="datatable"><thead><tr><th>Año/ciclo</th><th>Valor</th><th>Qué significa</th></tr></thead><tbody>${rows}</tbody></table><div class="sourcebox"><strong>Fuente / nota:</strong> ${f.src} ${f.url?`<a target="_blank" href="${f.url}">Abrir referencia ↗</a>`:""}</div>`;
+}
+
+function renderFactors(){
+ let list=document.getElementById("factorList");
+ list.innerHTML=factors.map((f,i)=>`<button class="factor-btn ${i===0?"active":""}" data-id="${f.id}"><strong>${f.id}. ${f.n}</strong><small>${f.block} · ${f.label}</small></button>`).join("");
+ list.querySelectorAll(".factor-btn").forEach(b=>b.onclick=()=>{
+   list.querySelectorAll(".factor-btn").forEach(x=>x.classList.remove("active"));
+   b.classList.add("active");
+   showFactor(+b.dataset.id);
+   renderFactorHistory(+b.dataset.id);
+ });
+ showFactor(1); renderFactorHistory(1);
+}
+
+function findSnapshot(f,year){
+ const idx=f.years.indexOf(String(year));
+ if(idx>=0){
+   const v=f.vals[idx], note=f.notes[idx];
+   if(v!==null) return {kind:"exact",value:v,note,year:String(year)};
+   return {kind:"none",value:null,note,year:String(year)};
+ }
+ // latest prior numeric observation
+ let prior=[];
+ f.years.forEach((y,i)=>{if(+y<=+year && f.vals[i]!==null) prior.push({year:y,value:f.vals[i],note:f.notes[i]})});
+ if(prior.length){
+   const q=prior[prior.length-1];
+   return {kind:"carry",value:q.value,note:`Sin medición exacta en ${year}. Último dato disponible hasta ese año: ${q.year}.`,year:q.year};
+ }
+ return {kind:"none",value:null,note:`Sin medición cuantitativa comparable disponible para ${year}.`,year:String(year)};
+}
+
+function renderYearSnapshot(){
+ const year=document.getElementById("yearSnapshot").value;
+ document.getElementById("yearTitle").textContent=`Los 20 factores vistos desde ${year}`;
+ document.getElementById("yearMeta").textContent=`Verde = dato exacto de ${year}; ámbar = se arrastra el último dato disponible hasta ${year}; gris = sin medición cuantitativa comparable. No se mezclan unidades distintas en una sola escala.`;
+ const grid=document.getElementById("yearFactorGrid");
+ grid.innerHTML=matrixFactors.map(f=>{
+   const q=findSnapshot(f,year);
+   let display=q.value===null?"Sin dato":`${q.value}${f.unit.toLowerCase().includes("porcentaje")?"%":""}`;
+   let width=0;
+   if(q.value!==null && f.max) width=Math.max(3,Math.min(100,(q.value/f.max)*100));
+   const source=f.url?`<a target="_blank" href="${f.url}">Fuente ↗</a>`:"Sin fuente cuantitativa única";
+   return `<div class="card year-factor ${q.kind}">
+     <h3>${f.id}. ${f.name}</h3>
+     <div class="yfvalue">${display}</div>
+     ${q.value!==null&&f.max?`<div class="mini"><span style="width:${width}%"></span></div>`:""}
+     <div class="yfstatus">${q.note}</div>
+     <div class="sourcebox">${source}</div>
+   </div>`;
+ }).join("");
+}
+
+function setFactorMode(mode){
+ const factor=mode==="factor";
+ document.getElementById("factorMode").style.display=factor?"block":"none";
+ document.getElementById("yearMode").style.display=factor?"none":"block";
+ document.getElementById("modeFactor").classList.toggle("active",factor);
+ document.getElementById("modeYear").classList.toggle("active",!factor);
+ if(factor) setTimeout(()=>window.dispatchEvent(new Event("resize")),30);
+ else renderYearSnapshot();
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+ renderFactors();
+ document.getElementById("modeFactor").onclick=()=>setFactorMode("factor");
+ document.getElementById("modeYear").onclick=()=>setFactorMode("year");
+ document.getElementById("yearSnapshot").onchange=renderYearSnapshot;
+ renderYearSnapshot();
+});
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
+bar("countryScores",["México","OCDE","B-S-J-Z China","Singapur"],[
+ {name:"Matemáticas",data:[388,463,612,563]},
+ {name:"Lectura",data:[408,461,527,535]},
+ {name:"Ciencias",data:[414,482,597,560]}
+],620);
+bar("countryLevel2",["México","OCDE","Chile","Estonia","Japón","Singapur"],[
+ {name:"Matemáticas ≥2",data:[30,65,41,83,84,89],suffix:"%"},
+ {name:"Lectura ≥2",data:[50,69,62,83,81,86],suffix:"%"},
+ {name:"Ciencias ≥2",data:[50,74,63,90,89,90],suffix:"%"}
+],100);
+
+document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.getElementById(b.dataset.view).classList.add("active");setTimeout(()=>window.dispatchEvent(new Event("resize")),40)});
+attachStaticTips();
+</script>
+</body></html>
